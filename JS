@@ -1,0 +1,69 @@
+let startTime = 0;
+let elapsedTime = 0;
+let intervalId;
+let isRunning = false;
+
+
+const display = document.getElementById('display');
+const startPauseBtn = document.getElementById('startPauseBtn');
+const lapBtn = document.getElementById('lapBtn');
+const resetBtn = document.getElementById('resetBtn');
+const lapList = document.getElementById('lapList');
+
+
+function formatTime(time) {
+    const milliseconds = Math.floor((time % 1000) / 10).toString().padStart(2, '0');
+    const seconds = Math.floor((time / 1000) % 60).toString().padStart(2, '0');
+    const minutes = Math.floor((time / (1000 * 60)) % 60).toString().padStart(2, '0');
+    const hours = Math.floor(time / (1000 * 60 * 60)).toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+}
+
+
+function updateDisplay() {
+    const time = Date.now() - startTime + elapsedTime;
+    display.textContent = formatTime(time);
+}
+
+
+function startPause() {
+    if (isRunning) {
+        clearInterval(intervalId);
+        elapsedTime += Date.now() - startTime;
+        startPauseBtn.textContent = 'Start';
+        lapBtn.disabled = true;
+        isRunning = false;
+    } else {
+        startTime = Date.now();
+        intervalId = setInterval(updateDisplay, 10);
+        startPauseBtn.textContent = 'Pause';
+        lapBtn.disabled = false;
+        resetBtn.disabled = false;
+        isRunning = true;
+    }
+}
+
+function recordLap() {
+    if (isRunning) {
+        const lapTime = formatTime(Date.now() - startTime + elapsedTime);
+        const lapItem = document.createElement('li');
+        lapItem.textContent = `Lap ${lapList.children.length + 1}: ${lapTime}`;
+        lapList.appendChild(lapItem);
+    }
+}
+
+
+function reset() {
+    clearInterval(intervalId);
+    elapsedTime = 0;
+    display.textContent = '00:00:00.00';
+    startPauseBtn.textContent = 'Start';
+    lapList.innerHTML = '';
+    lapBtn.disabled = true;
+    resetBtn.disabled = true;
+    isRunning = false;
+}
+
+startPauseBtn.addEventListener('click', startPause);
+lapBtn.addEventListener('click', recordLap);
+resetBtn.addEventListener('click', reset);
